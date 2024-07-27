@@ -1,4 +1,4 @@
-import { All, Controller, Param, Req, Res } from "@nestjs/common";
+import { All, Controller, HttpException, HttpStatus, Param, Req, Res } from "@nestjs/common";
 import { Request, Response } from "express";
 import { ResponseService } from "src/services/response.service";
 import { ServiceService } from "src/services/service.service";
@@ -20,7 +20,8 @@ export class MockerController {
 
         const service = await this.serviceService.findOneByNameAndVersion(response.name, response.version)
         const fetchedRes = await this.responseService.findOneByService(service._id, response.path, response.method)
-
+        if (!fetchedRes) throw new HttpException("The request endpoint is not defined in this service",HttpStatus.NOT_FOUND)
+        
         res.status(fetchedRes.statusCode).json(fetchedRes.content)
         
     }

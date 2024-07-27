@@ -19,6 +19,12 @@ export class ServiceController {
     return await this.serviceService.findAll()
   }
 
+  @Get("/:name/:version")
+  async getServiceResponses(@Param("name") name: string, @Param("version") version: string): Promise<any> {
+    const service = await this.serviceService.findOneByNameAndVersion(name, version)
+    return await this.responseService.findByService(service._id)
+  }
+
   @Delete("/:name/:version")
   async deleteServicesResponses(@Param("name") name: string, @Param("version") version: string): Promise<any> {
     const service = await this.serviceService.findOneByNameAndVersion(name, version)
@@ -54,9 +60,15 @@ export class ServiceController {
        
         const generatedPath = MockerUtils.generatePath(path, Parameter.arrayFrom(operation.parameters, newService.openapi), newService.openapi);
         Object.keys(operation.responses).forEach(code => {
-            const schema = operation.responses[code].content['application/json'].schema;
             // add endpoint to db
-            const content = MockerUtils.generateExample(schema, newService.openapi)           
+            let content
+            if (operation.responses[code].content){
+              const schema = operation.responses[code].content['application/json'].schema;
+              content = MockerUtils.generateExample(schema, newService.openapi)
+            } else  {
+              content = {}
+            }
+                      
             const response = {method, path: generatedPath, service: createdService._id, statusCode: Number.parseInt(code), content} as CreateResponseDto
             this.responseService.create(response)
         })

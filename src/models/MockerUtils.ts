@@ -1,24 +1,23 @@
-// import { faker } from 'faker'
-
 import { faker } from '@faker-js/faker'
+import { randomInt } from 'crypto'
 
 export class Parameter {
     name: string
     schema: object
 
-    constructor(name: string, schema: object){
+    constructor(name: string, schema: object) {
         this.name = name
         this.schema = schema
     }
 
-    public static arrayFrom(parameters: any[], openapi: object){
+    public static arrayFrom(parameters: any[], openapi: object) {
         if (parameters) {
             parameters.forEach((p, index) => {
-                if (Object.keys(p).includes("$ref")){
+                if (Object.keys(p).includes("$ref")) {
                     parameters[index] = MockerUtils.resolveRef(p['$ref'], openapi)
                 }
             })
-            return parameters.filter(param => param.in == "path").map((param) =>  new Parameter(param.name, param.schema))
+            return parameters.filter(param => param.in == "path").map((param) => new Parameter(param.name, param.schema))
         }
         else return []
     }
@@ -40,7 +39,22 @@ export class MockerUtils {
 
     public static generateExample(schema, openapi) {
 
+
+        if (!schema) return {}
+
         schema = Object.keys(schema).includes("$ref") ? this.resolveRef(schema["$ref"], openapi) : schema
+
+        if (Object.keys(schema).includes("allOf")) {
+
+            return this.generateAllOfExample(schema["allOf"], openapi)
+
+        }
+
+
+        if (Object.keys(schema).includes("oneOf")) {
+            const randomIndex = randomInt(schema["oneOf"].length)
+            return this.generateExample(schema["oneOf"][randomIndex], openapi)
+        }
 
         // Handle different schema types
         switch (schema.type) {
@@ -57,8 +71,17 @@ export class MockerUtils {
             case 'object':
                 return this.generateObjectExample(schema.properties, openapi);
             default:
+                // console.log(schema);
                 throw new Error(`Unsupported schema type: ${schema.type}`);
         }
+    }
+
+    public static generateAllOfExample(allOfSchema, openapi) {
+        const resultExample = {}
+        allOfSchema.forEach(element => {
+            Object.assign(resultExample, this.generateExample(element, openapi))
+        });
+        return resultExample
     }
 
     public static generateArrayExample(itemSchema, openapi) {
@@ -78,15 +101,15 @@ export class MockerUtils {
         return exampleObject;
     }
 
-    public static generatePath(path: string, parameters: Parameter[], openapi: object) {        
+    public static generatePath(path: string, parameters: Parameter[], openapi: object) {
         if (!parameters.length) return path
 
         const pathArray = path.split("/")
         pathArray.forEach((part, index) => {
             if (part.startsWith('{') && part.endsWith('}')) {
-                pathArray[index] = this.generateExample(parameters.filter(param => param.name == part.slice(1,-1))[0].schema, openapi)
+                pathArray[index] = this.generateExample(parameters.filter(param => param.name == part.slice(1, -1))[0].schema, openapi)
             }
-            
+
         })
         return pathArray.join("/")
     }

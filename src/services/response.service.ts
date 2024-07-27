@@ -31,6 +31,10 @@ export class ResponseService {
     return (await this.responseModel.findOne({ service: serviceId, path, method }).exec());
   }
 
+  async findByService(serviceId: Types.ObjectId): Promise<Response[]> {
+    return (await this.responseModel.find({ service: serviceId }).exec());
+  }
+
   async delete(id: string) {
     const deletedCat = await this.responseModel
       .findByIdAndDelete({ _id: id })
