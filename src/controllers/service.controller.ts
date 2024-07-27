@@ -53,8 +53,10 @@ export class ServiceController {
       Object.entries(methods).forEach(([method, operation]) => {
         Object.keys(operation.responses).forEach(code => {
             const schema = operation.responses[code].content['application/json'].schema;
-            //add endpoint to db
+            // add endpoint to db
             const content = MockerUtils.generateExample(schema, createdService.openapi)
+            // TODO:
+            // the stored path is a generated path (generate examples for path params)
             const response = {method, path, service: createdService._id, statusCode: Number.parseInt(code), content} as CreateResponseDto
             this.responseService.create(response)
         })

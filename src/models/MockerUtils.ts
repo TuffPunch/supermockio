@@ -19,11 +19,11 @@ export class MockerUtils {
     public static generateExample(schema, openapi) {
 
         schema = Object.keys(schema).includes("$ref") ? this.resolveRef(schema["$ref"], openapi) : schema
-
+        
         // Handle different schema types
         switch (schema.type) {
             case 'string':
-                return schema.enum ? schema.enum[0] : faker.string.alpha(10);
+                return schema.enum ? schema.enum[0] : faker.word.noun(10);
             case 'number':
                 return schema.enum ? schema.enum[0] : faker.number.float() * 10;
             case 'integer':
