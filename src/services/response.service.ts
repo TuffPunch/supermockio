@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { createResponseDto } from 'src/dtos/createResponseDto';
+import { Model, Types } from 'mongoose';
+import { CreateResponseDto } from 'src/dtos/createResponseDto';
 import { Response } from 'src/schemas/response.schema';
 
 
@@ -10,7 +10,7 @@ import { Response } from 'src/schemas/response.schema';
 export class ResponseService {
   constructor(@InjectModel(Response.name) private readonly responseModel: Model<Response>) {}
 
-  async create(createResponseDto: createResponseDto): Promise<Response> {
+  async create(createResponseDto: CreateResponseDto): Promise<Response> {
     const createdResponse = await this.responseModel.create(createResponseDto);
     return createdResponse;
   }
@@ -33,4 +33,13 @@ export class ResponseService {
       .exec();
     return deletedCat;
   }
+
+  async deleteByService(serviceId: Types.ObjectId){
+    const responses = await this.responseModel.find({ service: serviceId})
+    responses.forEach( async res => {
+      await this.responseModel.findByIdAndDelete(res._id)
+    })
+    return responses
+  }
+
 }

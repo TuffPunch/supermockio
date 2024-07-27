@@ -1,4 +1,4 @@
-import { Controller, Get, HttpException, HttpStatus, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Controller, Delete, Get, HttpException, HttpStatus, Param, Post, Query, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { ServiceService } from 'src/services/service.service';
 import { createServiceDto } from 'src/dtos/createServiceDto';
 import { ResponseService } from 'src/services/response.service';
@@ -6,6 +6,8 @@ import { ResponseService } from 'src/services/response.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { parse } from 'yaml';
 import { MockerResponse } from 'src/models/MockerResponse';
+import { CreateResponseDto } from 'src/dtos/createResponseDto';
+import { MockerUtils } from 'src/models/MockerUtils';
 
 
 @Controller("/services")
@@ -17,14 +19,29 @@ export class ServiceController {
     return await this.serviceService.findAll()
   }
 
+  @Delete("/:name/:version")
+  async deleteServicesResponses(@Param("name") name: string, @Param("version") version: string): Promise<any> {
+    const service = await this.serviceService.findOneByNameAndVersion(name, version)
+    if (!service) throw new HttpException("Service doesn't exists", HttpStatus.NOT_FOUND)
+    await this.responseService.deleteByService(service._id)
+    await this.serviceService.delete(service._id)
+    return new MockerResponse(200, "Responses Deleted successfully")
+  }
+
   @Post()
   @UseInterceptors(FileInterceptor('file'))
-  async createService(@UploadedFile() file: Express.Multer.File): Promise<any> {
+  async createService(@UploadedFile() file: Express.Multer.File, @Query("override") override: number = 0): Promise<any> {
     const newService = new createServiceDto()
     newService.openapi = parse(file.buffer.toString())
-    // check if service already exist
     const exist = await this.serviceService.findOneByNameAndVersion(newService.openapi.info.title, newService.openapi.info.version)
-    if (exist) throw new HttpException("Service already exists", HttpStatus.CONFLICT)
+    // override query param used to override an existing service
+    if (override == 0 && exist) {
+      if (exist) throw new HttpException("Service already exists", HttpStatus.CONFLICT)
+    } else if (exist) {
+    // delete the service and its responses if override != 0 and service exists
+      await this.responseService.deleteByService(exist._id)
+      await this.serviceService.delete(exist._id)
+    } 
     // persist service if it doesn't exist
     newService.name = newService.openapi.info.title
     newService.version = newService.openapi.info.version
@@ -32,14 +49,17 @@ export class ServiceController {
     if (!createdService) throw new HttpException("Error while adding the service", HttpStatus.INTERNAL_SERVER_ERROR)
 
     // save responses in DB with the new schema
-    // newService.openapi.paths = Object.entries(newService.openapi.paths).forEach(([path, methods]) => {
-    //   Object.entries(methods).forEach(([method, operation]) => {
-    //     Object.keys(operation.responses).forEach(code => {
-    //         const schema = operation.responses[code].content['application/json'].schema;
-    //         //add endpoint to db
-    //     })
-    //   });
-    // });
+    newService.openapi.paths = Object.entries(newService.openapi.paths).forEach(([path, methods]) => {
+      Object.entries(methods).forEach(([method, operation]) => {
+        Object.keys(operation.responses).forEach(code => {
+            const schema = operation.responses[code].content['application/json'].schema;
+            //add endpoint to db
+            const content = MockerUtils.generateExample(schema, createdService.openapi)
+            const response = {method, path, service: createdService._id, statusCode: Number.parseInt(code), content} as CreateResponseDto
+            this.responseService.create(response)
+        })
+      });
+    });
 
 
     

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { createServiceDto } from 'src/dtos/createServiceDto';
 import { Service } from 'src/schemas/service.schema';
 
@@ -11,6 +11,7 @@ export class ServiceService {
 
   async create(createServiceDto: createServiceDto): Promise<Service> {
     const createdService = await this.serviceModel.create(createServiceDto);
+  
     return createdService;
   }
 
@@ -31,7 +32,7 @@ export class ServiceService {
     return (await this.serviceModel.findOne({ name, version }).exec());
   }
 
-  async delete(id: string) {
+  async delete(id: Types.ObjectId) {
     const deletedCat = await this.serviceModel
       .findByIdAndDelete({ _id: id })
       .exec();

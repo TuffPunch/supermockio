@@ -1,6 +1,8 @@
-import { faker } from 'faker'
-export class MockerUtils {
+// import { faker } from 'faker'
 
+import { faker } from '@faker-js/faker'
+
+export class MockerUtils {
     public static resolveRef(refString, rootDoc) {
         const path = refString.split('/');
         path.shift(); // Remove the leading "#"
@@ -21,13 +23,13 @@ export class MockerUtils {
         // Handle different schema types
         switch (schema.type) {
             case 'string':
-                return schema.enum ? schema.enum[0] : faker.random.word();
+                return schema.enum ? schema.enum[0] : faker.string.alpha(10);
             case 'number':
-                return schema.enum ? schema.enum[0] : faker.datatype.number();
+                return schema.enum ? schema.enum[0] : faker.number.float() * 10;
             case 'integer':
-                return schema.enum ? schema.enum[0] : faker.datatype.number();
+                return schema.enum ? schema.enum[0] : faker.number.int();
             case 'boolean':
-                return schema.enum ? schema.enum[0] : faker.random.boolean();
+                return schema.enum ? schema.enum[0] : faker.datatype.boolean();
             case 'array':
                 return this.generateArrayExample(schema.items, openapi);
             case 'object':
