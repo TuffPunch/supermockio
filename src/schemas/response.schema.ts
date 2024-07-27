@@ -16,6 +16,12 @@ export class Response {
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Service' })
   service: Service;
 
+  @Prop()
+  path: string
+  
+  @Prop()
+  method: string
+
 }
 
 export const ResponseSchema = SchemaFactory.createForClass(Response);

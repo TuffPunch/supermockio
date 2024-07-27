@@ -9,6 +9,9 @@ export class Service {
   @Prop()
   name: string;
 
+  @Prop()
+  version: string;
+
   @Prop({type: "object"})
   openapi: object;
 
