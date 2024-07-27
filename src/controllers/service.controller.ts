@@ -7,7 +7,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { parse } from 'yaml';
 import { MockerResponse } from 'src/models/MockerResponse';
 import { CreateResponseDto } from 'src/dtos/createResponseDto';
-import { MockerUtils } from 'src/models/MockerUtils';
+import { MockerUtils, Parameter } from 'src/models/MockerUtils';
 
 
 @Controller("/services")
@@ -49,15 +49,15 @@ export class ServiceController {
     if (!createdService) throw new HttpException("Error while adding the service", HttpStatus.INTERNAL_SERVER_ERROR)
 
     // save responses in DB with the new schema
-    newService.openapi.paths = Object.entries(newService.openapi.paths).forEach(([path, methods]) => {
+    Object.entries(newService.openapi.paths).forEach(([path, methods]) => {
       Object.entries(methods).forEach(([method, operation]) => {
+       
+        const generatedPath = MockerUtils.generatePath(path, Parameter.arrayFrom(operation.parameters, newService.openapi), newService.openapi);
         Object.keys(operation.responses).forEach(code => {
             const schema = operation.responses[code].content['application/json'].schema;
             // add endpoint to db
-            const content = MockerUtils.generateExample(schema, createdService.openapi)
-            // TODO:
-            // the stored path is a generated path (generate examples for path params)
-            const response = {method, path, service: createdService._id, statusCode: Number.parseInt(code), content} as CreateResponseDto
+            const content = MockerUtils.generateExample(schema, newService.openapi)           
+            const response = {method, path: generatedPath, service: createdService._id, statusCode: Number.parseInt(code), content} as CreateResponseDto
             this.responseService.create(response)
         })
       });

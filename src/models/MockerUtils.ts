@@ -2,6 +2,28 @@
 
 import { faker } from '@faker-js/faker'
 
+export class Parameter {
+    name: string
+    schema: object
+
+    constructor(name: string, schema: object){
+        this.name = name
+        this.schema = schema
+    }
+
+    public static arrayFrom(parameters: any[], openapi: object){
+        if (parameters) {
+            parameters.forEach((p, index) => {
+                if (Object.keys(p).includes("$ref")){
+                    parameters[index] = MockerUtils.resolveRef(p['$ref'], openapi)
+                }
+            })
+            return parameters.filter(param => param.in == "path").map((param) =>  new Parameter(param.name, param.schema))
+        }
+        else return []
+    }
+}
+
 export class MockerUtils {
     public static resolveRef(refString, rootDoc) {
         const path = refString.split('/');
@@ -19,11 +41,11 @@ export class MockerUtils {
     public static generateExample(schema, openapi) {
 
         schema = Object.keys(schema).includes("$ref") ? this.resolveRef(schema["$ref"], openapi) : schema
-        
+
         // Handle different schema types
         switch (schema.type) {
             case 'string':
-                return schema.enum ? schema.enum[0] : faker.word.noun(10);
+                return schema.enum ? schema.enum[0] : faker.person.firstName();
             case 'number':
                 return schema.enum ? schema.enum[0] : faker.number.float() * 10;
             case 'integer':
@@ -54,5 +76,18 @@ export class MockerUtils {
             exampleObject[key] = this.generateExample(propSchema, openapi);
         }
         return exampleObject;
+    }
+
+    public static generatePath(path: string, parameters: Parameter[], openapi: object) {        
+        if (!parameters.length) return path
+
+        const pathArray = path.split("/")
+        pathArray.forEach((part, index) => {
+            if (part.startsWith('{') && part.endsWith('}')) {
+                pathArray[index] = this.generateExample(parameters.filter(param => param.name == part.slice(1,-1))[0].schema, openapi)
+            }
+            
+        })
+        return pathArray.join("/")
     }
 }
