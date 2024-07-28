@@ -10,6 +10,7 @@ import { ResponseService } from './services/response.service';
 import { Response, ResponseSchema } from './schemas/response.schema';
 import { ServiceController } from './controllers/service.controller';
 import { MockerController } from './controllers/mocker.controller';
+import { AIService } from './services/AIService';
 
 @Module({
   imports: [ ConfigModule,
@@ -24,6 +25,6 @@ import { MockerController } from './controllers/mocker.controller';
     MongooseModule.forFeature([{ name: Response.name, schema: ResponseSchema }])
     ],
   controllers: [AppController, ServiceController, MockerController],
-  providers: [AppService, ServiceService, ResponseService],
+  providers: [AppService, ServiceService, ResponseService, AIService],
 })
 export class AppModule {}

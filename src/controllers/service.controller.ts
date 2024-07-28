@@ -55,12 +55,19 @@ export class ServiceController {
     if (!createdService) throw new HttpException("Error while adding the service", HttpStatus.INTERNAL_SERVER_ERROR)
 
     // save responses in DB with the new schema
-    Object.entries(newService.openapi.paths).forEach(([path, methods]) => {
-      Object.entries(methods).forEach(([method, operation]) => {
-       
-        const generatedPath = MockerUtils.generatePath(path, Parameter.arrayFrom(operation.parameters, newService.openapi), newService.openapi);
-        Object.keys(operation.responses).forEach(code => {
+    /// move this in a function in service layer
+    const paths = newService.openapi.paths;
+    for (const path in paths) {
+      const methods = paths[path];
+      for (const method in methods) {
+        const operation = methods[method];
+
+        const generatedPath = await MockerUtils.generatePath(path, Parameter.arrayFrom(operation.parameters, newService.openapi), newService.openapi);
+        const responsesCodes = Object.keys(operation.responses)
+        for (const index in responsesCodes) {
             // add endpoint to db
+            const code = responsesCodes[index]
+            
             let content
             if (operation.responses[code].content){
               // use defined example if exists
@@ -69,20 +76,36 @@ export class ServiceController {
               else if (operation.responses[code].content['application/json']['examples'])
                 content = MockerUtils.fetchDefinedExample(operation.responses[code].content['application/json']['examples'], newService.openapi)
               else {
-                const schema = operation.responses[code].content['application/json'].schema;
-                content = MockerUtils.generateExample(schema, newService.openapi)
+                if (process.env['AI_GENERATION_ENABLED'] == "true") {
+                  const aiSample = {
+                    [path]: {
+                      [method]: {...operation, responses: operation.responses[code]}
+                    }
+                  }
+                  try {
+                    content = await MockerUtils.generateExampleWithAI(aiSample, newService.openapi)
+                  } catch (error) {
+                    // if error is caught in the AI generation, we generate the example in the basic way 
+                    console.error(error.message);
+                    const schema = operation.responses[code].content['application/json'].schema;
+                    content = MockerUtils.generateExample(schema, newService.openapi)  
+                  }
+                  
+                } else {
+                  const schema = operation.responses[code].content['application/json'].schema;
+                  content = MockerUtils.generateExample(schema, newService.openapi)
+                }
               }
               
             } else  {
               content = {}
             }
-                      
+          
             const response = {method, path: generatedPath, service: createdService._id, statusCode: Number.parseInt(code), content} as CreateResponseDto
             this.responseService.create(response)
-        })
-      });
-    });
-
+        }
+      };
+    };
 
     
     return new MockerResponse(201, {

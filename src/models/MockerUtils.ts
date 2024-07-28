@@ -1,5 +1,6 @@
 import { faker } from '@faker-js/faker'
 import { randomInt } from 'crypto'
+import { AIService } from 'src/services/AIService'
 
 export class Parameter {
     name: string
@@ -26,6 +27,7 @@ export class Parameter {
 }
 
 export class MockerUtils {
+
     public static resolveRef(refString, rootDoc) {
         const path = refString.split('/');
         path.shift(); // Remove the leading "#"
@@ -39,11 +41,55 @@ export class MockerUtils {
         return currentObject;
     }
 
+    public static resolveRefs(obj, rootDoc) {
+        if (typeof obj !== 'object' || obj === null) {
+          return obj; // Base case: not an object
+        }
+      
+        if (Array.isArray(obj)) {
+          return obj.map(item => this.resolveRefs(item, rootDoc));
+        }
+      
+        const resolvedObj = {};
+        for (const key in obj) {
+          const value = obj[key];
+          if(key === "$ref") {
+            Object.assign(resolvedObj, this.resolveRefs(this.resolveRef(value, rootDoc), rootDoc)) ;
+          } else {
+            resolvedObj[key] = this.resolveRefs(value, rootDoc);
+          }
+        }
+      
+        return resolvedObj;
+      }
+
     // for now we only fetch the first example the rest is ignored
     public static fetchDefinedExample(examples, openapi) {
         const firstKey = Object.keys(examples)[0]
         const firstExample = examples[firstKey]
         return (Object.keys(firstExample).includes("$ref")) ? this.resolveRef(firstExample["$ref"], openapi)["value"] : firstExample
+    }
+
+    public static async generateExampleWithAI(schema, openapi) {
+        if (!schema) return {}
+        const aiService = new AIService()
+        const resolvedSchema = this.resolveRefs(schema, openapi)
+        const prompt = `i want to generate an openapi response example for this endpoint
+        don't add any additional attrivutes just stick to the ones in the provided definition :
+        ${JSON.stringify(resolvedSchema, null, 4)}
+        i want only the generated example as response please
+        `
+ 
+        return await aiService.ask(prompt)
+
+    }
+
+    public static async generatePathWithAi(path, param, openapi){
+        param.schema = Object.keys(param.schema).includes("$ref") ? this.resolveRef(param.schema["$ref"], openapi) : param.schema
+        const aiService = new AIService()
+        const prompt = `i want you to generate an example value for my path param : ${param.name} used in this openapi path : ${path} return only the generated value `
+ 
+        return await aiService.ask(prompt)
     }
 
     public static generateExample(schema, openapi) {
@@ -106,22 +152,25 @@ export class MockerUtils {
         return exampleObject;
     }
 
-    public static generatePath(path: string, parameters: Parameter[], openapi: object) {
+    public static async generatePath(path: string, parameters: Parameter[], openapi: object) {
         if (!parameters.length) return path
 
         const pathArray = path.split("/")
-        pathArray.forEach((part, index) => {
+        for (let index = 0; index < pathArray.length; index++) {
+            const part = pathArray[index]
             if (part.startsWith('{') && part.endsWith('}')) {
                 const param = parameters.filter(param => param.name == part.slice(1, -1))[0]
                 if (param.example) 
                     pathArray[index] = param.example
                 else if (param.schema["default"])
                     pathArray[index] = param.schema["default"]
+                else if (process.env['AI_GENERATION_ENABLED'] == "true")
+                    pathArray[index] = await this.generatePathWithAi(path, param, openapi)
                 else
                 pathArray[index] = this.generateExample(param.schema, openapi)
             }
 
-        })
+        }
         return pathArray.join("/")
     }
 }
