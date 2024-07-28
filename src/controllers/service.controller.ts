@@ -63,8 +63,16 @@ export class ServiceController {
             // add endpoint to db
             let content
             if (operation.responses[code].content){
-              const schema = operation.responses[code].content['application/json'].schema;
-              content = MockerUtils.generateExample(schema, newService.openapi)
+              // use defined example if exists
+              if ( operation.responses[code].content['application/json']['example'])
+                content = operation.responses[code].content['application/json']['example']
+              else if (operation.responses[code].content['application/json']['examples'])
+                content = MockerUtils.fetchDefinedExample(operation.responses[code].content['application/json']['examples'], newService.openapi)
+              else {
+                const schema = operation.responses[code].content['application/json'].schema;
+                content = MockerUtils.generateExample(schema, newService.openapi)
+              }
+              
             } else  {
               content = {}
             }
@@ -77,7 +85,13 @@ export class ServiceController {
 
 
     
-    return new MockerResponse(201, "Service added successfully")    
+    return new MockerResponse(201, {
+      message: "Service added successfully",
+      service: {
+        name: createdService.name,
+        version: createdService.version
+      }
+    })    
 
   }
 

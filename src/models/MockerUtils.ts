@@ -4,10 +4,12 @@ import { randomInt } from 'crypto'
 export class Parameter {
     name: string
     schema: object
+    example: any
 
-    constructor(name: string, schema: object) {
+    constructor(name: string, schema: object, example: any) {
         this.name = name
         this.schema = schema
+        this.example = example
     }
 
     public static arrayFrom(parameters: any[], openapi: object) {
@@ -17,7 +19,7 @@ export class Parameter {
                     parameters[index] = MockerUtils.resolveRef(p['$ref'], openapi)
                 }
             })
-            return parameters.filter(param => param.in == "path").map((param) => new Parameter(param.name, param.schema))
+            return parameters.filter(param => param.in == "path").map((param) => new Parameter(param.name, param.schema, param['example']))
         }
         else return []
     }
@@ -37,20 +39,22 @@ export class MockerUtils {
         return currentObject;
     }
 
-    public static generateExample(schema, openapi) {
+    // for now we only fetch the first example the rest is ignored
+    public static fetchDefinedExample(examples, openapi) {
+        const firstKey = Object.keys(examples)[0]
+        const firstExample = examples[firstKey]
+        return (Object.keys(firstExample).includes("$ref")) ? this.resolveRef(firstExample["$ref"], openapi)["value"] : firstExample
+    }
 
+    public static generateExample(schema, openapi) {
 
         if (!schema) return {}
 
         schema = Object.keys(schema).includes("$ref") ? this.resolveRef(schema["$ref"], openapi) : schema
 
         if (Object.keys(schema).includes("allOf")) {
-
             return this.generateAllOfExample(schema["allOf"], openapi)
-
         }
-
-
         if (Object.keys(schema).includes("oneOf")) {
             const randomIndex = randomInt(schema["oneOf"].length)
             return this.generateExample(schema["oneOf"][randomIndex], openapi)
@@ -69,9 +73,9 @@ export class MockerUtils {
             case 'array':
                 return this.generateArrayExample(schema.items, openapi);
             case 'object':
-                return this.generateObjectExample(schema.properties, openapi);
+                return Object.assign({}, schema.properties ? this.generateObjectExample(schema.properties, openapi) : {}, schema["additionalProperties"] ? this.generateExample(schema["additionalProperties"], openapi) : {});
             default:
-                // console.log(schema);
+                console.log(schema);
                 throw new Error(`Unsupported schema type: ${schema.type}`);
         }
     }
@@ -94,6 +98,7 @@ export class MockerUtils {
 
     public static generateObjectExample(properties, openapi) {
         const exampleObject = {};
+
         for (const [key, propSchema] of Object.entries(properties)) {
 
             exampleObject[key] = this.generateExample(propSchema, openapi);
@@ -107,7 +112,13 @@ export class MockerUtils {
         const pathArray = path.split("/")
         pathArray.forEach((part, index) => {
             if (part.startsWith('{') && part.endsWith('}')) {
-                pathArray[index] = this.generateExample(parameters.filter(param => param.name == part.slice(1, -1))[0].schema, openapi)
+                const param = parameters.filter(param => param.name == part.slice(1, -1))[0]
+                if (param.example) 
+                    pathArray[index] = param.example
+                else if (param.schema["default"])
+                    pathArray[index] = param.schema["default"]
+                else
+                pathArray[index] = this.generateExample(param.schema, openapi)
             }
 
         })
