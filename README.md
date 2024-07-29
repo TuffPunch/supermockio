@@ -3,7 +3,9 @@
 
 
 ## What is SuperMockio
-**SuperMockio** is a powerful tool designed to accelerate API development by generating mock backends directly from OpenAPI specifications. Whether you're an API designer, frontend or backend developer, or project manager, SuperMockio empowers you to create realistic mock APIs for various use cases, such as client demos, decoupling frontend and backend development, or testing API integrations. 
+**SuperMockio** is a powerful tool designed to accelerate API development by generating mock backends directly from OpenAPI specifications. Whether you're an API designer, frontend or backend developer, or project manager.
+
+SuperMockio empowers you to create realistic mock APIs for various use cases, such as client demos, decoupling frontend and backend development, or testing API integrations. 
 
 **Key Features:**
 

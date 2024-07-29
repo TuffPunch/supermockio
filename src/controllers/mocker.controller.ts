@@ -1,10 +1,11 @@
 import { All, Controller, HttpException, HttpStatus, Param, Req, Res } from "@nestjs/common";
+import { ApiExcludeController } from "@nestjs/swagger";
 import { Request, Response } from "express";
 import { ResponseService } from "src/services/response.service";
 import { ServiceService } from "src/services/service.service";
 
 
-
+@ApiExcludeController()
 @Controller("/mocks/:name/:version/*")
 export class MockerController {
     constructor(private readonly responseService: ResponseService, private readonly serviceService: ServiceService) { }

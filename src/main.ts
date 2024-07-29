@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { exit } from 'process';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
   if (!process.env['MONGO_PASSWORD'] || !process.env['MONGO_USER'] || !process.env['MONGO_HOST'] || !process.env['MONGO_DATABASE']) {
@@ -14,6 +15,21 @@ async function bootstrap() {
     
   }
   const app = await NestFactory.create(AppModule);
+
+  const config = new DocumentBuilder()
+  .setTitle('SuperMockio')
+  .setDescription(`SuperMockio is a powerful tool designed to accelerate API development by generating mock backends directly from OpenAPI specifications. 
+   \n Whether you're an API designer, frontend or backend developer, or project manager. 
+   \n SuperMockio empowers you to create realistic mock APIs for various use cases, such as client demos, decoupling frontend and backend development, or testing API integrations`)
+  .setVersion('1.0.0')
+  .addTag('services')
+  .addServer('http://supermockio.io')
+  .build();
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api-doc', app, document, {
+    yamlDocumentUrl: "swagger/yaml"
+  });
+
   await app.listen(3000);
 }
 bootstrap();
