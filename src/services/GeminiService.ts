@@ -1,10 +1,11 @@
 import { GoogleGenerativeAI, GenerativeModel } from "@google/generative-ai"
 import { Injectable } from "@nestjs/common"
 import { RateLimiter } from "limiter"
+import { AIServiceInterface } from "src/utils/AIServiceInterface"
 
 
 @Injectable()
-export class AIService {
+export class GeminiService implements AIServiceInterface {
     private model: GenerativeModel
     private rateLimiter: RateLimiter
 
@@ -32,7 +33,7 @@ export class AIService {
       }
 
 
-    public async ask(prompt: string) {
+    public async ask(prompt: string) : Promise<any> {
         await this.getRateLimiter().removeTokens(1)
         const result = await this.getModel().generateContent(prompt)
         const response = result.response;

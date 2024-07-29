@@ -1,5 +1,5 @@
 # SuperMockio
-<center><img src="./logo.1.png" width=200></center>
+<center><img src="./logo.1.png" width=250></center>
 
 
 ## What is SuperMockio

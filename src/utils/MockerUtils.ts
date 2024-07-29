@@ -1,6 +1,7 @@
 import { faker } from '@faker-js/faker'
 import { randomInt } from 'crypto'
-import { AIService } from 'src/services/AIService'
+import { GeminiService } from 'src/services/GeminiService'
+import { AIServiceInterface } from './AIServiceInterface'
 
 export class Parameter {
     name: string
@@ -72,21 +73,21 @@ export class MockerUtils {
 
     public static async generateExampleWithAI(schema, openapi) {
         if (!schema) return {}
-        const aiService = new AIService()
+
+        const aiService : AIServiceInterface = new GeminiService() 
         const resolvedSchema = this.resolveRefs(schema, openapi)
         const prompt = `i want to generate an openapi response example for this endpoint
         don't add any additional attrivutes just stick to the ones in the provided definition :
         ${JSON.stringify(resolvedSchema, null, 4)}
         i want only the generated example as response please
         `
- 
-        return await aiService.ask(prompt)
 
+        return await aiService.ask(prompt)
     }
 
     public static async generatePathWithAi(path, param, openapi){
         param.schema = Object.keys(param.schema).includes("$ref") ? this.resolveRef(param.schema["$ref"], openapi) : param.schema
-        const aiService = new AIService()
+        const aiService = new GeminiService()
         const prompt = `i want you to generate an example value for my path param : ${param.name} used in this openapi path : ${path} return only the generated value `
  
         return await aiService.ask(prompt)
