@@ -1,10 +1,8 @@
 import { Module } from '@nestjs/common';
-import { AppService } from './services/app.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigService } from './config/config.service';
 import { ConfigModule } from './config/config.module';
 import { Service, ServiceSchema } from './schemas/service.schema';
-import { AppController } from './app.controller';
 import { ServiceService } from './services/service.service';
 import { ResponseService } from './services/response.service';
 import { Response, ResponseSchema } from './schemas/response.schema';
@@ -24,7 +22,7 @@ import { AIService } from './services/AIService';
     // Response Schema DB config
     MongooseModule.forFeature([{ name: Response.name, schema: ResponseSchema }])
     ],
-  controllers: [AppController, ServiceController, MockerController],
-  providers: [AppService, ServiceService, ResponseService, AIService],
+  controllers: [ServiceController, MockerController],
+  providers: [ServiceService, ResponseService, AIService],
 })
 export class AppModule {}

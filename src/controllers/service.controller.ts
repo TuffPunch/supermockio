@@ -2,12 +2,9 @@ import { Controller, Delete, Get, HttpException, HttpStatus, Param, Post, Query,
 import { ServiceService } from 'src/services/service.service';
 import { createServiceDto } from 'src/dtos/createServiceDto';
 import { ResponseService } from 'src/services/response.service';
-
 import { FileInterceptor } from '@nestjs/platform-express';
 import { parse } from 'yaml';
-import { MockerResponse } from 'src/models/MockerResponse';
-import { CreateResponseDto } from 'src/dtos/createResponseDto';
-import { MockerUtils, Parameter } from 'src/models/MockerUtils';
+import { MockerResponse } from 'src/utils/MockerResponse';
 
 
 @Controller("/services")
@@ -15,7 +12,7 @@ export class ServiceController {
   constructor(private readonly serviceService: ServiceService, private readonly responseService: ResponseService) { }
 
   @Get()
-  async getServices(): Promise<any> {
+  async getAllServices(): Promise<any> {
     return await this.serviceService.findAll()
   }
 
@@ -53,60 +50,8 @@ export class ServiceController {
     newService.version = newService.openapi.info.version
     const createdService = await this.serviceService.create(newService)
     if (!createdService) throw new HttpException("Error while adding the service", HttpStatus.INTERNAL_SERVER_ERROR)
-
     // save responses in DB with the new schema
-    /// move this in a function in service layer
-    const paths = newService.openapi.paths;
-    for (const path in paths) {
-      const methods = paths[path];
-      for (const method in methods) {
-        const operation = methods[method];
-
-        const generatedPath = await MockerUtils.generatePath(path, Parameter.arrayFrom(operation.parameters, newService.openapi), newService.openapi);
-        const responsesCodes = Object.keys(operation.responses)
-        for (const index in responsesCodes) {
-            // add endpoint to db
-            const code = responsesCodes[index]
-            
-            let content
-            if (operation.responses[code].content){
-              // use defined example if exists
-              if ( operation.responses[code].content['application/json']['example'])
-                content = operation.responses[code].content['application/json']['example']
-              else if (operation.responses[code].content['application/json']['examples'])
-                content = MockerUtils.fetchDefinedExample(operation.responses[code].content['application/json']['examples'], newService.openapi)
-              else {
-                if (process.env['AI_GENERATION_ENABLED'] == "true") {
-                  const aiSample = {
-                    [path]: {
-                      [method]: {...operation, responses: operation.responses[code]}
-                    }
-                  }
-                  try {
-                    content = await MockerUtils.generateExampleWithAI(aiSample, newService.openapi)
-                  } catch (error) {
-                    // if error is caught in the AI generation, we generate the example in the basic way 
-                    console.error(error.message);
-                    const schema = operation.responses[code].content['application/json'].schema;
-                    content = MockerUtils.generateExample(schema, newService.openapi)  
-                  }
-                  
-                } else {
-                  const schema = operation.responses[code].content['application/json'].schema;
-                  content = MockerUtils.generateExample(schema, newService.openapi)
-                }
-              }
-              
-            } else  {
-              content = {}
-            }
-          
-            const response = {method, path: generatedPath, service: createdService._id, statusCode: Number.parseInt(code), content} as CreateResponseDto
-            this.responseService.create(response)
-        }
-      };
-    };
-
+    await this.serviceService.createServiceResponses(createdService)
     
     return new MockerResponse(201, {
       message: "Service added successfully",
@@ -118,31 +63,6 @@ export class ServiceController {
 
   }
 
-
-  // @Get("/:name/responses")
-  // getServiceResponses(@Param("name") serviceId: string){
-  //   this.serviceService.findOneByName(serviceId)
-  //   .then(async service => {
-  //     console.log(service._id);
-      
-  //     const dto = new createResponseDto()
-  //     dto.service = service._id
-  //     dto.statusCode = 200
-  //     dto.content = {
-  //       "message": "works fine"
-  //     }
-  //     console.log(await this.responseService.create(dto));
-      
-  //     return {
-  //       message: "created"
-  //    }
-  //   })
-  //   .catch((error : Error) => {
-  //     return {
-  //       message: error.message
-  //    }
-      
-  //   })
 
     
 }
