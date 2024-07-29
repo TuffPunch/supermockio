@@ -13,10 +13,7 @@ import { GeminiService } from './services/GeminiService';
 @Module({
   imports: [ ConfigModule,
     // MongoDB Connection Config
-    MongooseModule.forRootAsync({
-        inject: [ConfigService],
-        useFactory: async (configService: ConfigService) => configService.getMongoConfig(),
-    }), 
+    MongooseModule.forRoot(new ConfigService().getMongoConfig()),
     // Service Schema DB config
     MongooseModule.forFeature([{ name: Service.name, schema: ServiceSchema }]),
     // Response Schema DB config

@@ -20,9 +20,8 @@ export class ConfigService {
         return this.get('PORT');
     }
 
-    public async getMongoConfig() {
-        return {
-            uri: 'mongodb+srv://' + this.get('MONGO_USER') + ':' + this.get('MONGO_PASSWORD') + '@' + this.get('MONGO_HOST') + '/' + this.get('MONGO_DATABASE')
-        };
+    public getMongoConfig() {
+        return 'mongodb+srv://' + this.get('MONGO_USER') + ':' + this.get('MONGO_PASSWORD') + '@' + this.get('MONGO_HOST') + '/' + this.get('MONGO_DATABASE')
+
     }
 }

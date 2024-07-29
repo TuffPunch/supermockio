@@ -2,6 +2,7 @@ import { faker } from '@faker-js/faker'
 import { randomInt } from 'crypto'
 import { GeminiService } from 'src/services/GeminiService'
 import { AIServiceInterface } from './AIServiceInterface'
+import { AIServiceHandler } from './AIServiceHandler'
 
 export class Parameter {
     name: string
@@ -74,7 +75,7 @@ export class MockerUtils {
     public static async generateExampleWithAI(schema, openapi) {
         if (!schema) return {}
 
-        const aiService : AIServiceInterface = new GeminiService() 
+        const aiService : AIServiceInterface = AIServiceHandler.getAIService()
         const resolvedSchema = this.resolveRefs(schema, openapi)
         const prompt = `i want to generate an openapi response example for this endpoint
         don't add any additional attrivutes just stick to the ones in the provided definition :
