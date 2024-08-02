@@ -88,7 +88,7 @@
             <div class="card <%= getCardClass(response.method) %> mb-3" >
                 <div class="card-header"><%= response.method.toUpperCase() %></div>
                 <div class="card-body">
-                  <h5 class="card-title"><%= process.env["SUPERMOCKIO_URL"]+response.path %></h5>
+                  <h5 class="card-title"><%= process.env["SUPERMOCKIO_URL"]+`/api/mocks/${service.name}/${service.version}`+response.path %></h5>
                   <p class="card-text">Status: <%= response.statusCode %></p>
                   <a target="_blank" href="<%= `/mocks?name=${service.name}&version=${service.version}&path=${response.path}&statusCode=${response.statusCode}&method=${response.method}` %>" class="btn btn-dark">Try</a>
                 </div>

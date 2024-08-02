@@ -19,7 +19,9 @@ export class MockerController {
             version: params['version']
         }
         
+        
         const service = await this.serviceService.findOneByNameAndVersion(response.name, response.version)
+        if (!service) throw new HttpException("The service cannot be found",HttpStatus.NOT_FOUND)
         const fetchedRes = await this.responseService.findOneByService(service._id, response.path, response.method, hdrStatus)
         if (!fetchedRes) throw new HttpException("The request endpoint is not defined in this service",HttpStatus.NOT_FOUND)
         

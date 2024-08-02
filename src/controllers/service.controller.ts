@@ -54,6 +54,7 @@ export class ServiceController {
   @Get("/:name/:version")
   async getServiceResponses(@Param("name") name: string, @Param("version") version: string): Promise<Response[]> {
     const service = await this.serviceService.findOneByNameAndVersion(name, version)
+    if (!service) throw new HttpException("The service cannot be found",HttpStatus.NOT_FOUND)
     return await this.responseService.findByService(service._id)
   }
 
