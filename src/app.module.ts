@@ -11,6 +11,12 @@ import { MockerController } from './controllers/mocker.controller';
 import { GeminiService } from './services/GeminiService';
 import { ViewsController } from './controllers/views.controller';
 
+const loadControllers = () => {
+  const controllers : any = [ServiceController, MockerController]
+  if (process.env['ENABLE_UI'] === "true") controllers.push(ViewsController)
+  return controllers
+}
+
 @Module({
   imports: [ ConfigModule,
     // MongoDB Connection Config
@@ -20,7 +26,7 @@ import { ViewsController } from './controllers/views.controller';
     // Response Schema DB config
     MongooseModule.forFeature([{ name: Response.name, schema: ResponseSchema }])
     ],
-  controllers: [ServiceController, MockerController, ViewsController],
+  controllers: loadControllers(),
   providers: [ServiceService, ResponseService, GeminiService],
 })
 export class AppModule {}

@@ -6,7 +6,7 @@ import { ServiceService } from "src/services/service.service";
 
 
 @ApiExcludeController()
-@Controller("/mocks/:name/:version/*")
+@Controller("/api/mocks/:name/:version/*")
 export class MockerController {
     constructor(private readonly responseService: ResponseService, private readonly serviceService: ServiceService) { }
     @All()
@@ -14,7 +14,7 @@ export class MockerController {
 
         const response =  {
             method: request.method.toLowerCase(),
-            path: "/"+request.path.split("/").slice(4).join("/"),
+            path: "/"+request.path.split("/").slice(5).join("/"),
             name: params['name'],
             version: params['version']
         }

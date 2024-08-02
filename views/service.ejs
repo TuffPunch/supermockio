@@ -26,10 +26,10 @@
       <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
           <li class="nav-item">
-            <a class="nav-link" aria-current="page" href="/ui">Home</a>
+            <a class="nav-link" aria-current="page" href="/">Home</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link active" aria-current="page" href="/ui/services">Services</a>
+            <a class="nav-link" aria-current="page" href="/services">Services</a>
           </li>
         </ul> 
       </div>
@@ -45,7 +45,7 @@
               <h4 class="card-title"><%= service.name %> <span class="card-subtitle badge text-bg-primary"><%= service.version %></span></h4>
               
               <p class="card-text service-desc"><%= service.description %></p>
-              <a target="_blank" href="<%= `/ui/documentations/${service.name}/${service.version}` %>" class="btn btn-dark">Openapi Definition</a>
+              <a target="_blank" href="<%= `/documentations/${service.name}/${service.version}` %>" class="btn btn-dark">Openapi Definition</a>
               
             </div>
           </div>
@@ -80,8 +80,8 @@
 
           %>
           <div class="alert alert-warning" role="alert">
-            It is recommended to use the mock via clients like Postman, Thunder Client or by another app.
-            <strong> Browser testing (clicking the try button) is only recommended for GET requests.</strong>
+            It is recommended to use the mock via clients like Postman, Thunder Client or by another app. <br>
+            <strong> Browser testing (clicking the try button) is only recommended for requests with a 2xx status code because the browser interprets only successful requests.</strong>
           </div>
         <% for (let response of responses) { %>
         <div class="col-sm-4">
@@ -90,7 +90,7 @@
                 <div class="card-body">
                   <h5 class="card-title"><%= process.env["SUPERMOCKIO_URL"]+response.path %></h5>
                   <p class="card-text">Status: <%= response.statusCode %></p>
-                  <a target="_blank" href="<%= `/ui/mocks?name=${service.name}&version=${service.version}&path=${response.path}&statusCode=${response.statusCode}&method=${response.method}` %>" class="btn btn-dark">Try</a>
+                  <a target="_blank" href="<%= `/mocks?name=${service.name}&version=${service.version}&path=${response.path}&statusCode=${response.statusCode}&method=${response.method}` %>" class="btn btn-dark">Try</a>
                 </div>
             </div>
         </div>

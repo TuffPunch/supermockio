@@ -3,10 +3,10 @@ import axios from 'axios';
 import { ResponseService } from 'src/services/response.service';
 import { ServiceService } from 'src/services/service.service';
 import { Document } from 'yaml';
-import { Response } from "express";
+import { Response } from 'express';
 
 
-@Controller("ui")
+@Controller()
 export class ViewsController {
   constructor(private readonly serviceService: ServiceService, private readonly responseService: ResponseService) { }
   @Get()
@@ -32,7 +32,7 @@ export class ViewsController {
   }
 
   @Get("/services/:name/:version/")
-  @Render("mock")
+  @Render("service")
   async getServiceMock(@Param() params: string[]) {
     const service = await this.serviceService.findOneByNameAndVersion(params['name'], params['version'])
     const responses = await this.responseService.findByService(service._id)
@@ -59,7 +59,7 @@ export class ViewsController {
     const mockResponse = await axios.request({
       method: request.method,
       baseURL: 'http://localhost:3000',
-      url: `/mocks/${request.name}/${request.version}${request.path}`,
+      url: `/api/mocks/${request.name}/${request.version}${request.path}`,
       headers: {
         "X-SuperMockio-Status": request.statusCode
       }
@@ -67,4 +67,5 @@ export class ViewsController {
 
     res.status(mockResponse.status).send(mockResponse.data)
   }
+
 } 

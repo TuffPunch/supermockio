@@ -11,7 +11,7 @@ import { Service } from 'src/schemas/service.schema';
 import { Response } from 'src/schemas/response.schema';
 
 @ApiTags('services')
-@Controller("/services")
+@Controller("/api/services")
 export class ServiceController {
   constructor(private readonly serviceService: ServiceService, private readonly responseService: ResponseService) { }
 
