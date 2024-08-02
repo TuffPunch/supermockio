@@ -17,7 +17,7 @@ export class ServiceController {
 
   @Get()
   @ApiResponse({ status: 200, description: 'List of services.', type: Service, example: [
-    new Service("635sqsdd1587", "Test Service", "1.0.0", {
+    new Service("635sqsdd1587", "Test Service", "1.0.0","Description here", {
       info: {title: "Test Service", version: "1.0.0"},
       paths: {
         "/tests": {}
@@ -98,6 +98,7 @@ export class ServiceController {
     // persist service if it doesn't exist
     newService.name = newService.openapi.info.title
     newService.version = newService.openapi.info.version
+    newService.description = newService.openapi.info.description ?? "-"
     const createdService = await this.serviceService.create(newService)
     if (!createdService) throw new HttpException("Error while adding the service", HttpStatus.INTERNAL_SERVER_ERROR)
     // save responses in DB with the new schema

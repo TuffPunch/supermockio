@@ -9,6 +9,7 @@ import { Response, ResponseSchema } from './schemas/response.schema';
 import { ServiceController } from './controllers/service.controller';
 import { MockerController } from './controllers/mocker.controller';
 import { GeminiService } from './services/GeminiService';
+import { ViewsController } from './controllers/views.controller';
 
 @Module({
   imports: [ ConfigModule,
@@ -19,7 +20,7 @@ import { GeminiService } from './services/GeminiService';
     // Response Schema DB config
     MongooseModule.forFeature([{ name: Response.name, schema: ResponseSchema }])
     ],
-  controllers: [ServiceController, MockerController],
+  controllers: [ServiceController, MockerController, ViewsController],
   providers: [ServiceService, ResponseService, GeminiService],
 })
 export class AppModule {}

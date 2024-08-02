@@ -27,8 +27,13 @@ export class ResponseService {
     return (await this.responseModel.findOne({ statusCode: name }).populate("service").exec());
   }
 
-  async findOneByService(serviceId: Types.ObjectId, path: string, method: string): Promise<Response> {
-    return (await this.responseModel.findOne({ service: serviceId, path, method }).exec());
+  async findOneByService(serviceId: Types.ObjectId, path: string, method: string, statusCode: number): Promise<Response> {
+    const query = { service: serviceId, path, method };
+    
+    if (statusCode) {
+      query['statusCode'] = statusCode;
+    }
+    return (await this.responseModel.findOne(query).exec());
   }
 
   async findByService(serviceId: Types.ObjectId): Promise<Response[]> {

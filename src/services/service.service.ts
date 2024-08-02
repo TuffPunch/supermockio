@@ -22,7 +22,9 @@ export class ServiceService {
   }
 
   async findAll(): Promise<Service[]> {
-    return this.serviceModel.find().exec();
+    return this.serviceModel.find().select(
+      ["name", "version", "description", "openapi"]
+    );
   }
 
   async findOne(id: string): Promise<Service> {

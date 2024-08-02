@@ -19,14 +19,19 @@ export class Service {
   version: string;
 
   @ApiProperty()
+  @Prop()
+  description: string;
+
+  @ApiProperty()
   @Prop({type: "object"})
   openapi: object;
 
-  constructor(id, name, version, openapi){
+  constructor(id, name, version, description, openapi){
     this._id = id
     this.name = name
     this.openapi = openapi
     this.version = version
+    this.description = description
   }
   
 }

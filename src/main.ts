@@ -2,6 +2,9 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { exit } from 'process';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import { join } from 'path';
+
 
 async function bootstrap() {
   if (!process.env['MONGO_PASSWORD'] || !process.env['MONGO_USER'] || !process.env['MONGO_HOST'] || !process.env['MONGO_DATABASE']) {
@@ -14,8 +17,15 @@ async function bootstrap() {
     exit(1)
     
   }
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
+  app.setBaseViewsDir(join(__dirname, '..', 'views'));
+  app.setViewEngine('ejs');
+  app.useStaticAssets(join(__dirname, "..", "views", "public"), {
+    prefix: ""
+  });
+
+  
   const config = new DocumentBuilder()
   .setTitle('SuperMockio')
   .setDescription(`SuperMockio is a powerful tool designed to accelerate API development by generating mock backends directly from OpenAPI specifications. 

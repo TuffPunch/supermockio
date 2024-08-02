@@ -27,12 +27,15 @@
     "@nestjs/mongoose": "^10.0.10",
     "@nestjs/platform-express": "^10.0.0",
     "@nestjs/swagger": "^7.4.0",
+    "axios": "^1.7.3",
+    "ejs": "^3.1.10",
     "faker": "^5.5.3",
     "limiter": "^2.1.0",
     "mongoose": "^8.5.1",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1",
-    "yaml": "^2.5.0"
+    "yaml": "^2.5.0",
+    "yamljs": "^0.3.0"
   },
   "devDependencies": {
     "@faker-js/faker": "^8.4.1",
