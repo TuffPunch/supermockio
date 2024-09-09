@@ -1,0 +1,19 @@
+version: '3'
+services:
+  supermockio:
+    build:
+      context: .
+    ports:
+      - 3000:3000
+    env_file:
+      - .env
+    # environment:
+    # - MONGO_USER=
+    # - MONGO_HOST=
+    # - MONGO_PASSWORD=
+    # - MONGO_DATABASE=openapi-mock
+    # - AI_GENERATION_ENABLED=false
+    # - GEMINI_API_KEY=<FILL THIS IF AI GENERATION IS ENABLED>
+    # - AI_SERVICE_NAME=<FILL THIS IF AI GENERATION IS ENABLED>
+    # - ENABLE_UI=true
+    # - SUPERMOCKIO_URL=http://localhost:3000

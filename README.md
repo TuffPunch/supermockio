@@ -35,9 +35,14 @@ SuperMockio empowers you to create realistic mock APIs for various use cases, su
 
 ## Installation
 ### Docker
-TODO
-### Local
-TODO
+```bash
+docker-compose up -d
+```
+### Local Dev
+```bash
+npm i
+npm run start:dev
+```
 
 ## Usage
 
