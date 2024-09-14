@@ -5,15 +5,37 @@ services:
       context: .
     ports:
       - 3000:3000
+    depends_on:
+      mongodb:
+        condition: service_healthy
     env_file:
       - .env
     # environment:
     # - MONGO_USER=
     # - MONGO_HOST=
+    # - MONGO_PROTOCOL=mongodb or mongodb+srv if using cloud mongo db
     # - MONGO_PASSWORD=
-    # - MONGO_DATABASE=openapi-mock
+    # - MONGO_DATABASE=supermockio
     # - AI_GENERATION_ENABLED=false
     # - GEMINI_API_KEY=<FILL THIS IF AI GENERATION IS ENABLED>
     # - AI_SERVICE_NAME=<FILL THIS IF AI GENERATION IS ENABLED>
     # - ENABLE_UI=true
     # - SUPERMOCKIO_URL=http://localhost:3000
+  
+  mongodb:
+    image: mongo:8.0.0-rc20-noble
+    container_name: mongodb
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.serverStatus().ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./mongodb/data/:/data/db
+      - ./mongodb/initdb.d/init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    env_file:
+      - .env
+    

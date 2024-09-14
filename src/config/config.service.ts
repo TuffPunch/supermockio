@@ -21,7 +21,7 @@ export class ConfigService {
     }
 
     public getMongoConfig() {
-        return 'mongodb+srv://' + this.get('MONGO_USER') + ':' + this.get('MONGO_PASSWORD') + '@' + this.get('MONGO_HOST') + '/' + this.get('MONGO_DATABASE')
+        return this.get("MONGO_PROTOCOL") + '://' + this.get('MONGO_USER') + ':' + this.get('MONGO_PASSWORD') + '@' + this.get('MONGO_HOST') + '/' + this.get('MONGO_DATABASE')
 
     }
 }
