@@ -23,6 +23,7 @@ SuperMockio empowers you to create realistic mock APIs for various use cases, su
 *: required
 | Environment Variable | Description |
 |---|---|
+| MONGO_PROTOCOL* | Protocol for MongoDB connection can be either mongodb or mongodb+srv if using cloud mongodb instance |
 | MONGO_USER* | Username for MongoDB connection |
 | MONGO_HOST* | Hostname or IP address of MongoDB server |
 | MONGO_PASSWORD* | Password for MongoDB connection |
